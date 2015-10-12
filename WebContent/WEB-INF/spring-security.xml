@@ -1,0 +1,42 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+	http://www.springframework.org/schema/security
+	http://www.springframework.org/schema/security/spring-security-3.2.xsd
+	http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+	<http use-expressions="true">
+		<intercept-url pattern="/frontend/**" access="hasRole('ROLE_USER')"/>
+		<intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
+		<form-login 
+		    login-page="/login" 
+		    authentication-success-handler-ref="customSuccessHandler"
+			authentication-failure-url="/login?error"
+			username-parameter="username"
+			password-parameter="password"
+			authentication-details-source-ref="userAuthenticationDetailsSource" />
+		<logout logout-success-url="/login?logout"  />
+		<!-- enable csrf protection -->
+		<csrf/>
+	</http>
+	
+	<beans:bean id="customAuthenticationProvider" class="com.web.authenticate.CustomAuthenticationProvider">
+		<beans:property name="dataSource" ref="dataSource" />
+	</beans:bean>
+	
+	<beans:bean id="serviceWrapper" class="com.web.utils.ServiceWrapper">
+		<beans:property name="dataSource" ref="dataSource" />
+	</beans:bean>
+	
+	<beans:bean id="userAuthenticationDetailsSource" class="com.web.authenticate.UserAuthenticationDetailsSource"/>
+	<beans:bean id="customSuccessHandler" class="com.web.authenticate.CustomSuccessHandler"/>
+	
+	<authentication-manager>
+		<authentication-provider ref="customAuthenticationProvider"/>
+	</authentication-manager>
+	
+</beans:beans>
